@@ -1,0 +1,31 @@
+graph TD;
+    A[Start GitLab CI/CD Pipeline] -->|Setup Secure Variables| B[Store Secrets in GitLab CI/CD]
+    
+    B --> C[Trigger Pipeline]
+    C -->|Trigger on push to main or release/*| D
+    C -->|Trigger on push to feature/*| D
+
+    D[Define Stages: test, build, deploy_staging, deploy_production]
+    
+    D -->|Run Unit, Integration, Security Tests| F{Tests Passed?}
+    F -->|No| G[Stop Pipeline]
+    F -->|Yes| H[Continue for main or release/*]
+
+    H --> I[Build Application]
+    I -->|Retrieve Secrets & Add ENV File| J[Login to Registry]
+    J -->|Build & Push Image| K{Build Successful?}
+    K -->|No| G
+    K -->|Yes| L[Deploy to Staging]
+
+    L -->|Retrieve Secrets & Connect to Cluster| M[Pull Image]
+    M -->|Deploy to Staging| N{Staging Deployment Successful?}
+    N -->|No| G
+    N -->|Yes| O["Deploy to Production (Manual Approval)"]
+
+    O -->|Retrieve Secrets & Connect to Cluster| P[Pull Image & Deploy]
+    P -->|Monitor Deployment| Q{Errors Detected?}
+    Q -->|Yes| R[Rollback to Previous Version]
+    Q -->|No| S[End Pipeline]
+
+    style G fill:#ff6666,stroke:#ff0000,stroke-width:2px;
+    style S fill:#66ff66,stroke:#008000,stroke-width:2px;
